@@ -41,7 +41,7 @@ class BaseProblem:
     def evaluate(self, x):
         raise NotImplementedError('Implement the evaluation function')
 
-    def plot2d(self, points=100, figure=None, figsize=(12, 8), contour=True, contour_levels=20,
+    def plot2d(self, points=100, ax=None, figsize=(12, 8), contour=True, contour_levels=20,
                imshow_kwds=None, contour_kwds=None, plot_log=False):
         if imshow_kwds is None:
             imshow_kwds = dict(cmap=cm.PuRd_r)
@@ -57,19 +57,18 @@ class BaseProblem:
             Z = Z - np.min(Z) + 1
             Z = np.log(Z)
 
-        if figure is None:
+        if ax is None:
             fig = plt.figure(figsize=figsize)
+            ax = fig.gca()
         else:
-            fig = figure
-
-        ax = fig.gca()
+            ax = ax
 
         if contour:
             im = ax.contourf(X, Y, Z, contour_levels, **contour_kwds)
         else:
             im = ax.imshow(Z, **imshow_kwds)
 
-        return fig, ax, im
+        return ax, im
 
     def plot3d(self, points=100, contour_levels=20, ax3d=None, figsize=(12, 8),
                view_init=None, surface_kwds=None, contour_kwds=None, plot_log=False):
@@ -110,7 +109,7 @@ class BaseProblem:
         contour_settings['offset'] = np.min(Z)
         cont = ax.contourf(X, Y, Z, contour_levels, **contour_settings)
 
-        return fig, ax, cont
+        return ax, cont
 
     def __repr__(self):
         return '{} {}D'.format(self.name, self.dimensions)
@@ -131,6 +130,14 @@ class Slowdown(BaseProblem):
 
 
 class Ackley(BaseProblem):
+    '''
+    Ackley Function: https://www.sfu.ca/~ssurjano/ackley.html
+    Physical properties and shapes: Many Local Minima
+    Dimensions: d
+    Global Minimum:
+        f(x=0, y=0) = 0
+    bounds: Usually -5 <= x,y <= 5
+    '''
     def __init__(self, dim=2, bounds=None, default_bounds=(-5, 5), a=20, b=0.2, c=2 * np.pi):
         super().__init__(dim, bounds, default_bounds)
         self.a = a
@@ -145,6 +152,14 @@ class Ackley(BaseProblem):
 
 
 class Rastrigin(BaseProblem):
+    '''
+    Rastrigin Function: https://www.sfu.ca/~ssurjano/rastr.html
+    Physical properties and shapes: Many Local Minima
+    Dimensions: d
+    Global Minimum:
+        f(0,... ,0) = 0
+    Bounds: Usually -5.12 <= x_i <= 5.12
+    '''
     def __init__(self, dim=2, bounds=None, default_bounds=(-5.12, 5.12), a=10):
         super().__init__(dim, bounds, default_bounds)
         self.a = a
@@ -156,7 +171,15 @@ class Rastrigin(BaseProblem):
 
 
 class Rosenbrock(BaseProblem):
-    def __init__(self, dim=2, bounds=None, default_bounds=(-10, 10), z_shift=0):
+    '''
+    Rosenbrock Function: https://www.sfu.ca/~ssurjano/rosen.html
+    Physical properties and shapes: Valley-Shaped
+    Dimensions: d
+    Global Minimum:
+        f(1,... ,1) = 0
+    Bounds: Usually -2 <= x_i <= 2
+    '''
+    def __init__(self, dim=2, bounds=None, default_bounds=(-2, 2), z_shift=0):
         super().__init__(dim, bounds, default_bounds)
         self.z_shift = z_shift
 
@@ -165,43 +188,97 @@ class Rosenbrock(BaseProblem):
 
 
 class CrossInTray(BaseProblem):
+    '''
+    Cross-in-tray Fucntion: https://www.sfu.ca/~ssurjano/crossit.html
+    Physical properties and shapes: Many Local Minima
+    Dimensions: 2
+    global Minimums:
+        f(x=1.34941, y=1.34941) = -2.06261
+        f(x=1.34941, y=-1.34941) = -2.06261
+        f(x=-1.34941, y=1.34941) = -2.06261
+        f(x=-1.34941, y=-1.34941) = -2.06261
+    bounds: -10 <= x,y <= 10
+    '''
     def __init__(self, bounds=None, default_bounds=(-10, 10)):
         super().__init__(2, bounds, default_bounds)
 
     def evaluate(self, x):
+        assert len(x) == 2, f"Input should have only 2 dimensions! x has {len(x)} dimensions"
+
         x1, x2 = x[0], x[1]
         return -0.0001 * (np.abs(
             np.sin(x1) * np.sin(x2) * np.exp(np.abs(100 - np.sqrt(x1 ** 2 + x2 ** 2) / np.pi))) + 1) ** 0.1
 
 
 class EggHolder(BaseProblem):
+    '''
+    EggHolder Function: https://www.sfu.ca/~ssurjano/egg.html
+    Physical properties and shapes: Many Local Minima
+    Dimensions: 2
+    Global Minimum:
+        f(x=512, y=404.239) = -959.6407
+    bounds: -512 <= x,y <= 512
+    '''
     def __init__(self, bounds=None, default_bounds=(-512, 512)):
         super().__init__(2, bounds, default_bounds)
 
     def evaluate(self, x):
+        assert len(x) == 2, f"Input should have only 2 dimensions! x has {len(x)} dimensions"
+
         x1, x2 = x[0], x[1]
         return -(x2 + 47) * np.sin(np.sqrt(np.abs(x2 + x1 / 2 + 47))) - x1 * np.sin(np.sqrt(np.abs(x1 - (x2 + 47))))
 
 
 class HolderTable(BaseProblem):
+    '''
+    EggHolder Fucntion: https://www.sfu.ca/~ssurjano/holder.html
+    Physical properties and shapes: Many Local Minima
+    Dimensions: 2
+    Global Minimums:
+        f(x=8.05502, y=9.66459) = -19.2085
+        f(x=8.05502, y=-9.66459) = -19.2085
+        f(x=-8.05502, y=9.66459) = -19.2085
+        f(x=-8.05502, y=-9.66459) = -19.2085
+    bounds: -10 <= x,y <= 10
+    '''
     def __init__(self, bounds=None, default_bounds=(-10, 10)):
         super().__init__(2, bounds, default_bounds)
 
     def evaluate(self, x):
+        assert len(x) == 2, f"Input should have only 2 dimensions! x has {len(x)} dimensions"
+
         x1, x2 = x[0], x[1]
         return -np.abs(np.sin(x1) * np.cos(x2) * np.exp(np.abs(1 - np.sqrt(x1 ** 2 + x2 ** 2) / np.pi)))
 
 
 class Easom(BaseProblem):
+    '''
+    Easom Function: https://www.sfu.ca/~ssurjano/easom.html
+    Physical properties and shapes: Steep Ridges/Drops
+    Dimensions: 2
+    Global Minimum:
+        f(pi, pi) = -1
+    Bounds: Usually -100 <= x,y <= 100
+    '''
     def __init__(self, bounds=None, default_bounds=(-100, 100)):
         super().__init__(2, bounds, default_bounds)
 
     def evaluate(self, x):
+        assert len(x) == 2, f"Input should have only 2 dimensions! x has {len(x)} dimensions"
+
         x1, x2 = x[0], x[1]
         return -np.cos(x1) * np.cos(x2) * np.exp(-(x1 - np.pi) ** 2 - (x2 - np.pi) ** 2)
 
 
 class StyblinskiTang(BaseProblem):
+    '''
+    Styblinski-Tang Function: https://www.sfu.ca/~ssurjano/stybtang.html
+    Physical properties and shapes: Steep Ridges/Drops
+    Dimensions: d
+    Global Minimum:
+        f(-2.903534,... ,-2.903534) = -39.16599 * d
+    Bounds: Usually -5 <= x_i <= 5
+    '''
     def __init__(self, dim=2, bounds=None, default_bounds=(-5, 5)):
         super().__init__(dim, bounds, default_bounds)
 
@@ -210,6 +287,14 @@ class StyblinskiTang(BaseProblem):
 
 
 class Michalewicz(BaseProblem):
+    '''
+    Michalewicz Function: https://www.sfu.ca/~ssurjano/michal.html
+    Physical properties and shapes: Steep Ridges/Drops
+    Dimensions: d
+    Global Minimums:
+        Not sure? Help fill this in if you can!
+    Bounds: Usually 0 <= x_i <= pi
+    '''
     def __init__(self, dim=2, bounds=None, default_bounds=(0, np.pi), m=10):
         super().__init__(dim, bounds, default_bounds)
         self.m = m
@@ -217,20 +302,36 @@ class Michalewicz(BaseProblem):
     def evaluate(self, x):
         c = 0
         for i in range(0, len(x)):
-            c += np.sin(x[i]) * np.sin(( (i+1) * x[i]**2)/np.pi) ** (2*self.m)
+            c += np.sin(x[i]) * np.sin(((i + 1) * x[i] ** 2) / np.pi) ** (2 * self.m)
         return -c
 
 
 class Schwefel(BaseProblem):
+    '''
+    Schwefel Function: https://www.sfu.ca/~ssurjano/schwef.html
+    Physical properties and shapes: Many Local Minima
+    Dimensions: d
+    Global Minimum:
+        f(420.9687,... ,420.9687) = 0
+    bounds: -500 <= x_i <= 500
+    '''
     def __init__(self, dim=2, bounds=None, default_bounds=(-500, 500)):
         super().__init__(dim, bounds, default_bounds)
 
     def evaluate(self, x):
         d = len(x)
-        return 418.9829*d - sum(x*np.sin(np.sqrt(np.abs(x))))
+        return 418.9829 * d - sum(x * np.sin(np.sqrt(np.abs(x))))
 
 
 class Levy(BaseProblem):
+    '''
+    Levy Function: https://www.sfu.ca/~ssurjano/levy.html
+    Physical properties and shapes: Many Local Minima
+    Dimensions: d
+    Global Minimum:
+        f(1,... ,1) = 0
+    bounds: -10 <= x_i <= 10
+    '''
     def __init__(self, dim=2, bounds=None, default_bounds=(-10, 10)):
         super().__init__(dim, bounds, default_bounds)
 
@@ -245,6 +346,14 @@ class Levy(BaseProblem):
 
 
 class DixonPrice(BaseProblem):
+    '''
+    Dixon-Price Function: https://www.sfu.ca/~ssurjano/dixonpr.html
+    Physical properties and shapes: Valley-Shaped
+    Dimensions: d
+    Global Minimum:
+        x_i = 2 ^ ((2^i - 2) / 2^i)
+    bounds: -10 <= x_i <= 10
+    '''
     def __init__(self, dim=2, bounds=None, default_bounds=(-10, 10)):
         super().__init__(dim, bounds, default_bounds)
 
@@ -256,6 +365,14 @@ class DixonPrice(BaseProblem):
 
 
 class Griewank(BaseProblem):
+    '''
+    Griewank Function: https://www.sfu.ca/~ssurjano/griewank.html
+    Physical properties and shapes: Many Local Minima
+    Dimensions: d
+    Global Minimum:
+        f(0,... ,0) = 0
+    bounds: -600 <= x_i <= 600
+    '''
     def __init__(self, dim=2, bounds=None, default_bounds=(-600, 600)):
         super().__init__(dim, bounds, default_bounds)
 
