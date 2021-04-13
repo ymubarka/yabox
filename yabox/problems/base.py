@@ -138,20 +138,24 @@ class Ackley(BaseProblem):
     Physical properties and shapes: Many Local Minima
     Dimensions: d
     Global Minimum:
-        f(x=0, y=0) = 0
-    bounds: Usually -5 <= x,y <= 5
+        f(0,... ,0) = 0
+    bounds: Usually -5 <= x_i <= 5
     '''
     def __init__(self, dim=2, bounds=None, default_bounds=(-5, 5), a=20, b=0.2, c=2 * np.pi):
         super().__init__(dim, bounds, default_bounds)
         self.a = a
         self.b = b
         self.c = c
+        self.dim = dim
 
     def evaluate(self, x):
         n = len(x)
         s1 = sum(np.power(x, 2))
         s2 = sum(np.cos(self.c * x))
         return -self.a * np.exp(-self.b * np.sqrt(s1 / n)) - np.exp(s2 / n) + self.a + np.exp(1)
+
+    def get_minimum(self):
+        return (0,) * self.dim
 
 
 class Rastrigin(BaseProblem):
@@ -166,11 +170,15 @@ class Rastrigin(BaseProblem):
     def __init__(self, dim=2, bounds=None, default_bounds=(-5.12, 5.12), a=10):
         super().__init__(dim, bounds, default_bounds)
         self.a = a
+        self.dim = dim
 
     def evaluate(self, x):
         d = len(x)
         s = np.power(x, 2) - self.a * np.cos(2 * np.pi * x)
         return self.a * d + sum(s)
+
+    def get_minimum(self):
+        return (0,) * self.dim
 
 
 class Rosenbrock(BaseProblem):
@@ -185,9 +193,13 @@ class Rosenbrock(BaseProblem):
     def __init__(self, dim=2, bounds=None, default_bounds=(-2, 2), z_shift=0):
         super().__init__(dim, bounds, default_bounds)
         self.z_shift = z_shift
+        self.dim = dim
 
     def evaluate(self, x):
         return sum(100.0 * (x[1:] - x[:-1] ** 2.0) ** 2.0 + (1 - x[:-1]) ** 2.0) + self.z_shift
+
+    def get_minimum(self):
+        return (1,) * self.dim
 
 
 class CrossInTray(BaseProblem):
@@ -200,7 +212,7 @@ class CrossInTray(BaseProblem):
         f(x=1.34941, y=-1.34941) = -2.06261
         f(x=-1.34941, y=1.34941) = -2.06261
         f(x=-1.34941, y=-1.34941) = -2.06261
-    bounds: -10 <= x,y <= 10
+    bounds: -10 <= x, y <= 10
     '''
     def __init__(self, bounds=None, default_bounds=(-10, 10)):
         super().__init__(2, bounds, default_bounds)
@@ -211,6 +223,10 @@ class CrossInTray(BaseProblem):
         x1, x2 = x[0], x[1]
         return -0.0001 * (np.abs(
             np.sin(x1) * np.sin(x2) * np.exp(np.abs(100 - np.sqrt(x1 ** 2 + x2 ** 2) / np.pi))) + 1) ** 0.1
+
+    def get_minimum(self):
+        return [(1.34941, 1.34941), (1.34941, -1.34941),
+                (-1.34941, 1.34941), (-1.34941, -1.34941)]
 
 
 class EggHolder(BaseProblem):
@@ -230,6 +246,9 @@ class EggHolder(BaseProblem):
 
         x1, x2 = x[0], x[1]
         return -(x2 + 47) * np.sin(np.sqrt(np.abs(x2 + x1 / 2 + 47))) - x1 * np.sin(np.sqrt(np.abs(x1 - (x2 + 47))))
+
+    def get_minimum(self):
+        return (512, 404.239)
 
 
 class HolderTable(BaseProblem):
@@ -253,6 +272,10 @@ class HolderTable(BaseProblem):
         x1, x2 = x[0], x[1]
         return -np.abs(np.sin(x1) * np.cos(x2) * np.exp(np.abs(1 - np.sqrt(x1 ** 2 + x2 ** 2) / np.pi)))
 
+    def get_minimum(self):
+        return [(8.05502, 9.66459), (8.05502, -9.66459), (-8.05502, 9.66459)
+                (-8.05502, -9.66459)]
+
 
 class Easom(BaseProblem):
     '''
@@ -272,6 +295,9 @@ class Easom(BaseProblem):
         x1, x2 = x[0], x[1]
         return -np.cos(x1) * np.cos(x2) * np.exp(-(x1 - np.pi) ** 2 - (x2 - np.pi) ** 2)
 
+    def get_minimum(self):
+        return (np.pi, np.pi)
+
 
 class StyblinskiTang(BaseProblem):
     '''
@@ -284,9 +310,13 @@ class StyblinskiTang(BaseProblem):
     '''
     def __init__(self, dim=2, bounds=None, default_bounds=(-5, 5)):
         super().__init__(dim, bounds, default_bounds)
+        self.dim = dim
 
     def evaluate(self, x):
         return sum(x ** 4 - 16 * x ** 2 + 5 * x) / 2
+
+    def get_minimum(self):
+        return (-2.903534, ) * self.dim
 
 
 class Michalewicz(BaseProblem):
@@ -320,10 +350,14 @@ class Schwefel(BaseProblem):
     '''
     def __init__(self, dim=2, bounds=None, default_bounds=(-500, 500)):
         super().__init__(dim, bounds, default_bounds)
+        self.dim = dim
 
     def evaluate(self, x):
         d = len(x)
         return 418.9829 * d - sum(x * np.sin(np.sqrt(np.abs(x))))
+
+    def get_minimum(self):
+        return (420.9687, ) * self.dim
 
 
 class Levy(BaseProblem):
@@ -337,6 +371,7 @@ class Levy(BaseProblem):
     '''
     def __init__(self, dim=2, bounds=None, default_bounds=(-10, 10)):
         super().__init__(dim, bounds, default_bounds)
+        self.dim = dim
 
     def evaluate(self, x):
         w = 1 + (x - 1) / 4
@@ -346,6 +381,9 @@ class Levy(BaseProblem):
         b = sum((wp - 1) ** 2 * (1 + 10 * np.sin(np.pi * wp + 1) ** 2))
         c = (wd - 1) ** 2 * (1 + np.sin(2 * np.pi * wd) ** 2)
         return a + b + c
+
+    def get_minimum(self):
+        return (1, ) * self.dim
 
 
 class DixonPrice(BaseProblem):
@@ -359,12 +397,16 @@ class DixonPrice(BaseProblem):
     '''
     def __init__(self, dim=2, bounds=None, default_bounds=(-10, 10)):
         super().__init__(dim, bounds, default_bounds)
+        self.dim = dim
 
     def evaluate(self, x):
         c = 0
         for i in range(1, len(x)):
             c += i * (2 * x[i] ** 2 - x[i-1]) ** 2
         return (x[0] - 1) ** 2 + c
+
+    def get_minimum(self):
+        return temp = tuple([2 ** ((2 ** i - 2) / 2 ** i) for i in range(self.dim)])
 
 
 class Griewank(BaseProblem):
@@ -378,6 +420,7 @@ class Griewank(BaseProblem):
     '''
     def __init__(self, dim=2, bounds=None, default_bounds=(-600, 600)):
         super().__init__(dim, bounds, default_bounds)
+        self.dim = dim
 
     def evaluate(self, x):
         a = sum(x ** 2 / 4000)
@@ -385,3 +428,6 @@ class Griewank(BaseProblem):
         for i in range(len(x)):
             b *= np.cos(x[i] / np.sqrt(i+1))
         return a - b + 1
+
+    def get_minimum(self):
+        return (0, ) * self.dim
