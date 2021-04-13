@@ -38,6 +38,9 @@ class BaseProblem:
     def __call__(self, *args, **kwargs):
         return self.evaluate(*args, **kwargs)
 
+    def get_bounds(self):
+        return self.bounds
+
     def evaluate(self, x):
         raise NotImplementedError('Implement the evaluation function')
 
